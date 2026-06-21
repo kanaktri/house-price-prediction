@@ -31,8 +31,23 @@ st.set_page_config(
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(APP_DIR)
-MODEL_DIR = os.path.join(PROJECT_ROOT, "Model")
 ASSETS_DIR = os.path.join(APP_DIR, "assets")
+
+
+def _resolve_dir(name: str) -> str:
+    
+    candidate_here = os.path.join(APP_DIR, name)
+    candidate_up = os.path.join(PROJECT_ROOT, name)
+    if os.path.isdir(candidate_here):
+        return candidate_here
+    if os.path.isdir(candidate_up):
+        return candidate_up
+    # Default to the sibling-of-app.py location; load_model raises a clear
+    # error later if it's still missing there.
+    return candidate_here
+
+
+MODEL_DIR = _resolve_dir("Model")
 
 # ===========================================================
 # 2. DATA
@@ -98,7 +113,7 @@ def load_image_b64(filename: str) -> str:
 
 @st.cache_data(show_spinner=False)
 def load_dataset() -> pd.DataFrame:
-    csv_path = os.path.join(PROJECT_ROOT, "Dataset", "Housing.csv")
+    csv_path = os.path.join(_resolve_dir("Dataset"), "Housing.csv")
     if os.path.exists(csv_path):
         return pd.read_csv(csv_path)
     return pd.DataFrame()
